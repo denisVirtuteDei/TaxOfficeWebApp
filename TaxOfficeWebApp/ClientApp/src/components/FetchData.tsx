@@ -71,7 +71,7 @@ class FetchData extends React.PureComponent<WeatherForecastProps> {
     return (
       <div className="d-flex justify-content-between">
         <Link className='btn btn-outline-secondary btn-sm' to={`/fetch-data/${prevStartDateIndex}`}>Previous</Link>
-        {this.props.isLoading && <span>Loading...</span>}
+            {this.props.isLoading && <span>Loading...</span>}
         <Link className='btn btn-outline-secondary btn-sm' to={`/fetch-data/${nextStartDateIndex}`}>Next</Link>
       </div>
     );

@@ -1,6 +1,6 @@
 using System;
 
-namespace TaxOfficeWebApp
+namespace TaxOfficeWebApp.Models
 {
     public class WeatherForecast
     {
