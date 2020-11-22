@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TaxOfficeWebApp
+namespace TaxOfficeWebApp.Models
 {
     public partial class Units
     {

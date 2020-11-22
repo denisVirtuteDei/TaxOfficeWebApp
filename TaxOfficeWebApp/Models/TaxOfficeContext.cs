@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace TaxOfficeWebApp
+namespace TaxOfficeWebApp.Models
 {
     public partial class TaxOfficeContext : DbContext
     {
@@ -15,9 +15,8 @@ namespace TaxOfficeWebApp
         {
         }
 
-        #region DbSet
-
-        public virtual DbSet<Declarations> Declarations { get; set; }
+        public virtual DbSet<BankChecks> BankChecks { get; set; }
+        public virtual DbSet<Debts> Debts { get; set; }
         public virtual DbSet<Departures> Departures { get; set; }
         public virtual DbSet<DeparturesExecutors> DeparturesExecutors { get; set; }
         public virtual DbSet<EconomicActivityTypes> EconomicActivityTypes { get; set; }
@@ -25,42 +24,62 @@ namespace TaxOfficeWebApp
         public virtual DbSet<Entity> Entity { get; set; }
         public virtual DbSet<Executors> Executors { get; set; }
         public virtual DbSet<NaturalPersons> NaturalPersons { get; set; }
+        public virtual DbSet<PayedTaxes> PayedTaxes { get; set; }
+        public virtual DbSet<PersonRegistrations> PersonRegistrations { get; set; }
         public virtual DbSet<Persons> Persons { get; set; }
         public virtual DbSet<Positions> Positions { get; set; }
         public virtual DbSet<Priorities> Priorities { get; set; }
-        public virtual DbSet<Registrations> Registrations { get; set; }
         public virtual DbSet<SelfEmployed> SelfEmployed { get; set; }
         public virtual DbSet<ToVisit> ToVisit { get; set; }
         public virtual DbSet<Units> Units { get; set; }
         public virtual DbSet<Users> Users { get; set; }
-
-        #endregion
+        public virtual DbSet<VRandom> VRandom { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=DESKTOP-GJEGN1G;Database=TaxOffice;Trusted_Connection=True;");
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+                optionsBuilder.UseSqlServer("Server=localhost; Database=TaxOffice; Trusted_Connection=True; User ID=NETWORK SERVICE;");
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Declarations>(entity =>
+            modelBuilder.Entity<BankChecks>(entity =>
             {
-                entity.Property(e => e.FillingDate).HasColumnType("date");
+                entity.Property(e => e.FinalSum).HasColumnType("money");
 
-                entity.Property(e => e.FkPerson).HasColumnName("FK_Person");
+                entity.Property(e => e.FkRegPerson).HasColumnName("FK_RegPerson");
+
+                entity.Property(e => e.PayedDate).HasColumnType("date");
 
                 entity.Property(e => e.Title)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasColumnType("text");
 
-                entity.HasOne(d => d.FkPersonNavigation)
-                    .WithMany(p => p.Declarations)
-                    .HasForeignKey(d => d.FkPerson)
+                entity.HasOne(d => d.FkRegPersonNavigation)
+                    .WithMany(p => p.BankChecks)
+                    .HasForeignKey(d => d.FkRegPerson)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Declarations_Persons");
+                    .HasConstraintName("FK_BankChecks_PersonRegistrations");
+            });
+
+            modelBuilder.Entity<Debts>(entity =>
+            {
+                entity.Property(e => e.DebtBillingDate).HasColumnType("date");
+
+                entity.Property(e => e.DebtPayedDate).HasColumnType("date");
+
+                entity.Property(e => e.DebtSum).HasColumnType("money");
+
+                entity.Property(e => e.FkBankCheck).HasColumnName("FK_BankCheck");
+
+                entity.HasOne(d => d.FkBankCheckNavigation)
+                    .WithMany(p => p.Debts)
+                    .HasForeignKey(d => d.FkBankCheck)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Debts_BankChecks");
             });
 
             modelBuilder.Entity<Departures>(entity =>
@@ -98,7 +117,7 @@ namespace TaxOfficeWebApp
             modelBuilder.Entity<EconomicActivityTypes>(entity =>
             {
                 entity.HasKey(e => e.Ncea)
-                    .HasName("PK__Economic__D9400719A97B7E8D");
+                    .HasName("PK__Economic__D94007192703BA2E");
 
                 entity.Property(e => e.Ncea)
                     .HasColumnName("NCEA")
@@ -108,11 +127,15 @@ namespace TaxOfficeWebApp
 
                 entity.Property(e => e.Title)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasColumnType("text");
             });
 
             modelBuilder.Entity<Employees>(entity =>
             {
+                entity.HasIndex(e => e.PersonalNumber)
+                    .HasName("UQ__Employee__AC2CC42EABA8C620")
+                    .IsUnique();
+
                 entity.Property(e => e.MiddleName).HasMaxLength(50);
 
                 entity.Property(e => e.Name)
@@ -121,7 +144,7 @@ namespace TaxOfficeWebApp
 
                 entity.Property(e => e.PersonalNumber)
                     .IsRequired()
-                    .HasMaxLength(10);
+                    .HasMaxLength(15);
 
                 entity.Property(e => e.Surname)
                     .IsRequired()
@@ -131,11 +154,11 @@ namespace TaxOfficeWebApp
             modelBuilder.Entity<Entity>(entity =>
             {
                 entity.HasKey(e => e.Unp)
-                    .HasName("PK__Entity__C5B17EBFCA21ED06");
+                    .HasName("PK__Entity__C5B17EBF54F75199");
 
                 entity.Property(e => e.Unp)
                     .HasColumnName("UNP")
-                    .HasMaxLength(10);
+                    .HasMaxLength(9);
 
                 entity.Property(e => e.FirstName)
                     .IsRequired()
@@ -157,7 +180,7 @@ namespace TaxOfficeWebApp
 
                 entity.Property(e => e.ShortOrgTitle)
                     .IsRequired()
-                    .HasMaxLength(30);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Telephone)
                     .IsRequired()
@@ -169,6 +192,8 @@ namespace TaxOfficeWebApp
                 entity.Property(e => e.FkEmployee).HasColumnName("FK_Employee");
 
                 entity.Property(e => e.FkPosition).HasColumnName("FK_Position");
+
+                entity.Property(e => e.FkUser).HasColumnName("FK_User");
 
                 entity.Property(e => e.LastWorkDate).HasColumnType("date");
 
@@ -183,21 +208,24 @@ namespace TaxOfficeWebApp
                 entity.HasOne(d => d.FkPositionNavigation)
                     .WithMany(p => p.Executors)
                     .HasForeignKey(d => d.FkPosition)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Executors_Positions");
+
+                entity.HasOne(d => d.FkUserNavigation)
+                    .WithMany(p => p.Executors)
+                    .HasForeignKey(d => d.FkUser)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Executors_Users");
             });
 
             modelBuilder.Entity<NaturalPersons>(entity =>
             {
                 entity.HasKey(e => e.Unp)
-                    .HasName("PK__NaturalP__C5B17EBF085A3C7C");
+                    .HasName("PK__NaturalP__C5B17EBF5377D29A");
 
                 entity.Property(e => e.Unp)
                     .HasColumnName("UNP")
-                    .HasMaxLength(10);
-
-                entity.Property(e => e.Address)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                    .HasMaxLength(9);
 
                 entity.Property(e => e.FirstName)
                     .IsRequired()
@@ -208,6 +236,10 @@ namespace TaxOfficeWebApp
                 entity.Property(e => e.PassportCode)
                     .IsRequired()
                     .HasMaxLength(20);
+
+                entity.Property(e => e.PersonalAddress)
+                    .IsRequired()
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.PersonalNumber)
                     .IsRequired()
@@ -222,44 +254,104 @@ namespace TaxOfficeWebApp
                     .HasMaxLength(20);
             });
 
+            modelBuilder.Entity<PayedTaxes>(entity =>
+            {
+                entity.Property(e => e.FkBankCheck).HasColumnName("FK_BankCheck");
+
+                entity.Property(e => e.FkNcea).HasColumnName("FK_NCEA");
+
+                entity.Property(e => e.TaxAmount).HasColumnType("money");
+
+                entity.HasOne(d => d.FkBankCheckNavigation)
+                    .WithMany(p => p.PayedTaxes)
+                    .HasForeignKey(d => d.FkBankCheck)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_PayedTaxes_BankChecks");
+
+                entity.HasOne(d => d.FkNceaNavigation)
+                    .WithMany(p => p.PayedTaxes)
+                    .HasForeignKey(d => d.FkNcea)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_PayedTaxes_EconomicActivityTypes");
+            });
+
+            modelBuilder.Entity<PersonRegistrations>(entity =>
+            {
+                entity.Property(e => e.Bankrupt).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.EndDate).HasColumnType("date");
+
+                entity.Property(e => e.FkEmployee).HasColumnName("FK_Employee");
+
+                entity.Property(e => e.FkInitNcea).HasColumnName("FK_Init_NCEA");
+
+                entity.Property(e => e.FkPerson).HasColumnName("FK_Person");
+
+                entity.Property(e => e.RegDate).HasColumnType("date");
+
+                entity.HasOne(d => d.FkEmployeeNavigation)
+                    .WithMany(p => p.PersonRegistrations)
+                    .HasForeignKey(d => d.FkEmployee)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_PersonRegistrations_Executors");
+
+                entity.HasOne(d => d.FkInitNceaNavigation)
+                    .WithMany(p => p.PersonRegistrations)
+                    .HasForeignKey(d => d.FkInitNcea)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_PersonRegistrations_EconomicActivityTypes");
+
+                entity.HasOne(d => d.FkPersonNavigation)
+                    .WithMany(p => p.PersonRegistrations)
+                    .HasForeignKey(d => d.FkPerson)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_PersonRegistrations_Persons");
+            });
+
             modelBuilder.Entity<Persons>(entity =>
             {
-                entity.Property(e => e.FkPriorities).HasColumnName("FK_Priorities");
+                entity.HasIndex(e => e.FkUser)
+                    .HasName("UQ__Persons__E7E87D0C7892CF49")
+                    .IsUnique();
 
-                entity.Property(e => e.FkUnp)
-                    .IsRequired()
-                    .HasColumnName("FK_UNP")
-                    .HasMaxLength(10);
+                entity.Property(e => e.FkEntityPersonUnp)
+                    .HasColumnName("FK_EntityPersonUNP")
+                    .HasMaxLength(9);
 
-                entity.HasOne(d => d.FkPrioritiesNavigation)
+                entity.Property(e => e.FkIndividualPersonUnp)
+                    .HasColumnName("FK_IndividualPersonUNP")
+                    .HasMaxLength(9);
+
+                entity.Property(e => e.FkSelfEmployedPersonUnp)
+                    .HasColumnName("FK_SelfEmployedPersonUNP")
+                    .HasMaxLength(9);
+
+                entity.Property(e => e.FkUser).HasColumnName("FK_User");
+
+                entity.HasOne(d => d.FkEntityPersonUnpNavigation)
                     .WithMany(p => p.Persons)
-                    .HasForeignKey(d => d.FkPriorities)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Persons_Priorities");
-
-                entity.HasOne(d => d.FkUnpNavigation)
-                    .WithMany(p => p.Persons)
-                    .HasForeignKey(d => d.FkUnp)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasForeignKey(d => d.FkEntityPersonUnp)
                     .HasConstraintName("FK_Persons_Entity");
 
-                entity.HasOne(d => d.FkUnp1)
+                entity.HasOne(d => d.FkIndividualPersonUnpNavigation)
                     .WithMany(p => p.Persons)
-                    .HasForeignKey(d => d.FkUnp)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasForeignKey(d => d.FkIndividualPersonUnp)
                     .HasConstraintName("FK_Persons_NaturalPersons");
 
-                entity.HasOne(d => d.FkUnp2)
+                entity.HasOne(d => d.FkSelfEmployedPersonUnpNavigation)
                     .WithMany(p => p.Persons)
-                    .HasForeignKey(d => d.FkUnp)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasForeignKey(d => d.FkSelfEmployedPersonUnp)
                     .HasConstraintName("FK_Persons_SelfEmployed");
+
+                entity.HasOne(d => d.FkUserNavigation)
+                    .WithOne(p => p.Persons)
+                    .HasForeignKey<Persons>(d => d.FkUser)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Persons_Users");
             });
 
             modelBuilder.Entity<Positions>(entity =>
             {
-                entity.Property(e => e.FkPriority).HasColumnName("FK_Priority");
-
                 entity.Property(e => e.FkUnitStructure)
                     .IsRequired()
                     .HasColumnName("FK_Unit_structure")
@@ -268,12 +360,6 @@ namespace TaxOfficeWebApp
                 entity.Property(e => e.Title)
                     .IsRequired()
                     .HasMaxLength(50);
-
-                entity.HasOne(d => d.FkPriorityNavigation)
-                    .WithMany(p => p.Positions)
-                    .HasForeignKey(d => d.FkPriority)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Positions_Priorities");
 
                 entity.HasOne(d => d.FkUnitStructureNavigation)
                     .WithMany(p => p.Positions)
@@ -289,55 +375,24 @@ namespace TaxOfficeWebApp
                     .HasMaxLength(50);
             });
 
-            modelBuilder.Entity<Registrations>(entity =>
-            {
-                entity.Property(e => e.EndDate).HasColumnType("date");
-
-                entity.Property(e => e.FkEmployee).HasColumnName("FK_Employee");
-
-                entity.Property(e => e.FkNcea).HasColumnName("FK_NCEA");
-
-                entity.Property(e => e.FkPerson).HasColumnName("FK_Person");
-
-                entity.Property(e => e.RegDate).HasColumnType("date");
-
-                entity.HasOne(d => d.FkEmployeeNavigation)
-                    .WithMany(p => p.Registrations)
-                    .HasForeignKey(d => d.FkEmployee)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Registrations_Executors");
-
-                entity.HasOne(d => d.FkNceaNavigation)
-                    .WithMany(p => p.Registrations)
-                    .HasForeignKey(d => d.FkNcea)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Registrations_EconomicActivityTypes");
-
-                entity.HasOne(d => d.FkPersonNavigation)
-                    .WithMany(p => p.Registrations)
-                    .HasForeignKey(d => d.FkPerson)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Registrations_Persons");
-            });
-
             modelBuilder.Entity<SelfEmployed>(entity =>
             {
                 entity.HasKey(e => e.Unp)
-                    .HasName("PK__SelfEmpl__C5B17EBF5B3C5177");
+                    .HasName("PK__SelfEmpl__C5B17EBFD250C566");
 
                 entity.Property(e => e.Unp)
                     .HasColumnName("UNP")
-                    .HasMaxLength(10);
-
-                entity.Property(e => e.Address)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                    .HasMaxLength(9);
 
                 entity.Property(e => e.FirstName)
                     .IsRequired()
                     .HasMaxLength(20);
 
                 entity.Property(e => e.MiddleName).HasMaxLength(20);
+
+                entity.Property(e => e.OrgAddress)
+                    .IsRequired()
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.PassportNumber)
                     .IsRequired()
@@ -349,7 +404,7 @@ namespace TaxOfficeWebApp
 
                 entity.Property(e => e.ShortOrgTitle)
                     .IsRequired()
-                    .HasMaxLength(30);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.Telephone)
                     .IsRequired()
@@ -378,7 +433,7 @@ namespace TaxOfficeWebApp
             modelBuilder.Entity<Units>(entity =>
             {
                 entity.HasKey(e => e.UnitTitle)
-                    .HasName("PK__Units__9499A7473B3805FA");
+                    .HasName("PK__Units__9499A7475F7E13D2");
 
                 entity.Property(e => e.UnitTitle).HasMaxLength(50);
 
@@ -387,10 +442,8 @@ namespace TaxOfficeWebApp
 
             modelBuilder.Entity<Users>(entity =>
             {
-                entity.HasNoKey();
-
                 entity.HasIndex(e => e.UserLogin)
-                    .HasName("UQ__Users__7F8E8D5E31E0E0C0")
+                    .HasName("UQ__Users__7F8E8D5E2DC0F791")
                     .IsUnique();
 
                 entity.Property(e => e.FkPriority).HasColumnName("FK_Priority");
@@ -401,13 +454,24 @@ namespace TaxOfficeWebApp
 
                 entity.Property(e => e.UserPassword)
                     .IsRequired()
-                    .HasMaxLength(50);
+                    .HasMaxLength(256);
 
                 entity.HasOne(d => d.FkPriorityNavigation)
-                    .WithMany()
+                    .WithMany(p => p.Users)
                     .HasForeignKey(d => d.FkPriority)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_TopSecrets_Priorities");
+                    .HasConstraintName("FK_User_Priorities");
+            });
+
+            modelBuilder.Entity<VRandom>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("vRandom");
+
+                entity.Property(e => e.Randval)
+                    .HasColumnName("randval")
+                    .HasMaxLength(8000);
             });
 
             OnModelCreatingPartial(modelBuilder);

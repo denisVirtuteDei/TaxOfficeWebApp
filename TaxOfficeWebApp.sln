@@ -3,7 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaxOfficeWebApp", "TaxOfficeWebApp\TaxOfficeWebApp.csproj", "{01694E42-305D-4E96-B07E-58756CA27607}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaxOfficeWebApp", "TaxOfficeWebApp\TaxOfficeWebApp.csproj", "{01694E42-305D-4E96-B07E-58756CA27607}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B833ED2A-EE1B-42C6-9750-13FFE10B95AF}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

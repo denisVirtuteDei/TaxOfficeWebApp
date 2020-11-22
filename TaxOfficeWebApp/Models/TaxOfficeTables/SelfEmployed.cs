@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace TaxOfficeWebApp
+namespace TaxOfficeWebApp.Models
 {
     public partial class SelfEmployed
     {
@@ -16,7 +16,7 @@ namespace TaxOfficeWebApp
         public string SecondName { get; set; }
         public string MiddleName { get; set; }
         public string PassportNumber { get; set; }
-        public string Address { get; set; }
+        public string OrgAddress { get; set; }
         public string Telephone { get; set; }
 
         public virtual ICollection<Persons> Persons { get; set; }
