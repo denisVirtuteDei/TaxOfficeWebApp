@@ -26,20 +26,23 @@ namespace TaxOfficeWebApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            //services.AddMvc(option => option.EnableEndpointRouting = false);
 
             services.AddDbContext<TaxOfficeContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DevConnection")));
 
-            // In production, the React files will be served from this directory
-            //services.AddSpaStaticFiles(configuration =>
-            //{
-            //    configuration.RootPath = "ClientApp/build";
-            //});
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        [System.Obsolete]
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors(options =>
+            options.WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -52,32 +55,27 @@ namespace TaxOfficeWebApp
                 app.UseHsts();
             }
 
-            //app.UseHttpsRedirection();
-            //app.UseStaticFiles();
-            //app.UseSpaStaticFiles();
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
 
             app.UseRouting();
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                //endpoints.MapGet("/", async context =>
-                //{
-                //    await context.Response.WriteAsync("Hello World!");
-                //});
-                endpoints.MapControllers(
-                   );
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller}/{action=Index}/{id?}");
             });
 
-            //app.UseSpa(spa =>
-            //{
-            //    spa.Options.SourcePath = "ClientApp";
+            app.UseSpa(spa =>
+            {
+                spa.Options.SourcePath = "ClientApp";
 
-            //    if (env.IsDevelopment())
-            //    {
-            //        spa.UseReactDevelopmentServer(npmScript: "start");
-            //    }
-            //});
+                if (env.IsDevelopment())
+                {
+                    spa.UseReactDevelopmentServer(npmScript: "start");
+                }
+            });
         }
     }
 }
