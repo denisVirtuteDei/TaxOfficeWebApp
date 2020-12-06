@@ -17,6 +17,7 @@ namespace TaxOfficeWebApp.Models
         public decimal FinalSum { get; set; }
         public DateTime PayedDate { get; set; }
         public bool IsDebtRepayment { get; set; }
+        public bool IsCorrect { get; set; }
 
         public virtual PersonRegistrations FkRegPersonNavigation { get; set; }
         public virtual ICollection<Debts> Debts { get; set; }

@@ -15,6 +15,22 @@ namespace TaxOfficeWebApp.Controllers
     {
         private readonly TaxOfficeContext _context;
 
+        
+
+        //// GET: api/PayedTaxes/5
+        //[HttpGet("{id}")]
+        //public async Task<ActionResult<PayedTaxes>> GetPayedTaxes(int id)
+        //{
+        //    var payedTaxes = await _context.PayedTaxes.FindAsync(id);
+
+        //    if (payedTaxes == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return payedTaxes;
+        //}
+
         public PayedTaxesController(TaxOfficeContext context)
         {
             _context = context;
@@ -25,20 +41,6 @@ namespace TaxOfficeWebApp.Controllers
         public async Task<ActionResult<IEnumerable<PayedTaxes>>> GetPayedTaxes()
         {
             return await _context.PayedTaxes.ToListAsync();
-        }
-
-        // GET: api/PayedTaxes/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<PayedTaxes>> GetPayedTaxes(int id)
-        {
-            var payedTaxes = await _context.PayedTaxes.FindAsync(id);
-
-            if (payedTaxes == null)
-            {
-                return NotFound();
-            }
-
-            return payedTaxes;
         }
 
         // PUT: api/PayedTaxes/5
@@ -86,20 +88,20 @@ namespace TaxOfficeWebApp.Controllers
         }
 
         // DELETE: api/PayedTaxes/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<PayedTaxes>> DeletePayedTaxes(int id)
-        {
-            var payedTaxes = await _context.PayedTaxes.FindAsync(id);
-            if (payedTaxes == null)
-            {
-                return NotFound();
-            }
+        //[HttpDelete("{id}")]
+        //public async Task<ActionResult<PayedTaxes>> DeletePayedTaxes(int id)
+        //{
+        //    var payedTaxes = await _context.PayedTaxes.FindAsync(id);
+        //    if (payedTaxes == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            _context.PayedTaxes.Remove(payedTaxes);
-            await _context.SaveChangesAsync();
+        //    _context.PayedTaxes.Remove(payedTaxes);
+        //    await _context.SaveChangesAsync();
 
-            return payedTaxes;
-        }
+        //    return payedTaxes;
+        //}
 
         private bool PayedTaxesExists(int id)
         {

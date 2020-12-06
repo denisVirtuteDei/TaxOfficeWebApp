@@ -22,6 +22,7 @@ namespace TaxOfficeWebApp.Controllers
             Configuration = configuration;
         }
 
+        // Bank check info by person UNP
         // GET: api/BankCheckInfo/503612177
         [HttpGet("{unp}")]
         public IEnumerable<object> Get(string unp)
@@ -66,5 +67,7 @@ namespace TaxOfficeWebApp.Controllers
             }
             return list;
         }
+
+
     }
 }

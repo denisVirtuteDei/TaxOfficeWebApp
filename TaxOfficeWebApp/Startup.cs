@@ -26,6 +26,7 @@ namespace TaxOfficeWebApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddControllers().AddNewtonsoftJson();
             //services.AddMvc(option => option.EnableEndpointRouting = false);
 
             services.AddDbContext<TaxOfficeContext>(options =>
