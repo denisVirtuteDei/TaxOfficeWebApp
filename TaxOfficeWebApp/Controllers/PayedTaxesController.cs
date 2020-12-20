@@ -2,20 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using TaxOfficeWebApp.Models;
 
 namespace TaxOfficeWebApp.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles = "admin, employee, user")]
     [ApiController]
     public class PayedTaxesController : ControllerBase
     {
         private readonly TaxOfficeContext _context;
+        private readonly IConfiguration Configuration;
 
-        
+
 
         //// GET: api/PayedTaxes/5
         //[HttpGet("{id}")]
@@ -34,6 +39,13 @@ namespace TaxOfficeWebApp.Controllers
         public PayedTaxesController(TaxOfficeContext context)
         {
             _context = context;
+
+            string projectPath = AppDomain.CurrentDomain.BaseDirectory.Split(new String[] { @"bin\" }, StringSplitOptions.None)[0];
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(projectPath)
+                .AddJsonFile("appsettings.json")
+                .Build();
+            Configuration = configuration;
         }
 
         // GET: api/PayedTaxes
@@ -41,6 +53,54 @@ namespace TaxOfficeWebApp.Controllers
         public async Task<ActionResult<IEnumerable<PayedTaxes>>> GetPayedTaxes()
         {
             return await _context.PayedTaxes.ToListAsync();
+        }
+
+
+        // GET: api/PayedTaxesInfo/{date} , Route("api/PayedTaxesInfo")
+        [HttpGet("{deadline}")]
+        public IEnumerable<object> GetPayedTaxesInfo(string deadline)
+        {
+            List<object> list = new List<object>();
+            using var connection = new SqlConnection(Configuration.GetConnectionString("DevConnection"));
+            using var cmd = new SqlCommand
+            {
+                Connection = connection,
+                CommandType = System.Data.CommandType.StoredProcedure,
+                CommandText = "GetPayedTaxesWithPersonInfo"
+            };
+
+            SqlParameter param1 = new SqlParameter()
+            {
+                ParameterName = "@deadline",
+                SqlDbType = System.Data.SqlDbType.Date,
+                Value = deadline.Replace('-', '/')
+            };
+
+            cmd.Parameters.Add(param1);
+            connection.Open();
+
+            SqlDataReader reader = cmd.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    list.Add(new
+                    {
+                        unp = reader.GetValue(0),
+                        fName = reader.GetValue(1),
+                        mName = reader.GetValue(2),
+                        sName = reader.GetValue(3),
+                        checkTitle = reader.GetValue(4),
+                        taxesId = reader.GetValue(5),
+                        fkNcea = reader.GetValue(6),
+                        fkBankCheck = reader.GetValue(7),
+                        taxAmount = reader.GetValue(8),
+                        isCorrect = reader.GetValue(9)
+                    });
+                }
+            }
+            return list;
         }
 
         // PUT: api/PayedTaxes/5

@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FastReport.OpenSource" Version="2020.4.11" />
+    <PackageReference Include="FastReport.OpenSource.Export.PdfSimple" Version="2020.4.11" />
+    <PackageReference Include="FastReport.OpenSource.Web" Version="2020.4.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.10" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.10" />
     <PackageReference Include="Microsoft.AspNetCore.NodeServices" Version="3.1.9" />

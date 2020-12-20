@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using TaxOfficeWebApp.Models;
 
 namespace TaxOfficeWebApp.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles = "admin, employee, user")]
     [ApiController]
     public class BankCheckController : ControllerBase
     {
@@ -21,6 +24,8 @@ namespace TaxOfficeWebApp.Controllers
         }
 
         // GET: api/BankCheck
+
+   
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BankChecks>>> GetBankChecks()
         {
@@ -40,6 +45,8 @@ namespace TaxOfficeWebApp.Controllers
 
             return bankChecks;
         }
+
+
 
         // PUT: api/BankCheck/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
@@ -79,8 +86,25 @@ namespace TaxOfficeWebApp.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<BankChecks>> PostBankChecks(BankChecks bankChecks)
+        public async Task<ActionResult<BankChecks>> PostBankChecks([FromBody]JObject data)
         {
+            BankChecks bankChecks = data["bankCheck"].ToObject<BankChecks>();
+            string unp = data["unp"].ToObject<string>();
+
+            var check = await (
+                from u in _context.Persons
+                join e in _context.PersonRegistrations on u.Id equals e.FkPerson
+                where (u.FkEntityPersonUnp == unp || u.FkIndividualPersonUnp == unp || u.FkSelfEmployedPersonUnp == unp)
+                select e.Id
+            ).FirstOrDefaultAsync();
+
+            if(check == 0)
+            {
+                return NotFound();
+            }
+
+            bankChecks.FkRegPerson = check;
+
             _context.BankChecks.Add(bankChecks);
             await _context.SaveChangesAsync();
 

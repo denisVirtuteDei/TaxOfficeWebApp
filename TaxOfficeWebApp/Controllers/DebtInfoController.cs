@@ -8,6 +8,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Protocols;
 using TaxOfficeWebApp.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaxOfficeWebApp.Controllers
 {
@@ -28,6 +29,7 @@ namespace TaxOfficeWebApp.Controllers
         }
 
         // GET: api/DebtInfo
+        [Authorize(Roles = "admin, employee, user")]
         [HttpGet("{unp}")]
         public IEnumerable<object> Get(string unp)
         {

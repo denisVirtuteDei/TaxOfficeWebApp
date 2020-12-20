@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -23,7 +24,8 @@ namespace TaxOfficeWebApp.Controllers
         }
 
         // Bank check info by person UNP
-        // GET: api/BankCheckInfo/503612177
+        // GET: api/BankCheckInfo/id
+        [Authorize(Roles = "admin, employee, user")]
         [HttpGet("{unp}")]
         public IEnumerable<object> Get(string unp)
         {
@@ -68,6 +70,7 @@ namespace TaxOfficeWebApp.Controllers
             return list;
         }
 
+        
 
     }
 }
